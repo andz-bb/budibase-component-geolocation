@@ -1,0 +1,29 @@
+{
+  "type": "component",
+  "metadata": {},
+  "schema": {
+    "name": "geolocation",
+    "friendlyName": "geolocation",
+    "description": "A form field that provides the user's current geolocation",
+    "icon": "Text",
+    "settings": [
+      {
+        "type": "field/string",
+        "label": "Field",
+        "key": "field",
+        "required": true
+      },
+      {
+        "type": "text",
+        "label": "Label",
+        "key": "label"
+      },
+      {
+        "type": "boolean",
+        "label": "Disabled",
+        "key": "disabled",
+        "defaultValue": false
+      }
+    ]
+  }
+}
