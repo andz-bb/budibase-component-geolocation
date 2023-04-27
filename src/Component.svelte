@@ -95,13 +95,13 @@
       {label || " "}
     </label>
     <div class="spectrum-Form-itemField">
-      <button
-        class="spectrum-ActionButton spectrum-ActionButton--sizeM"
-        on:click={getLocation}
-        {disabled}
-      >
-        <span class="spectrum-ActionButton-label">Get Location</span>
-      </button>
+      {#if !disabled}
+        <button
+          on:click={getLocation}
+          class="spectrum-Button spectrum-Button--fill spectrum-Button--sizeM spectrum-Button--primary"
+          >Get Location</button
+        >
+      {/if}
       <p>{latitude}</p>
       <p>{longitude}</p>
 
