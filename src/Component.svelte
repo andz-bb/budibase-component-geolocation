@@ -15,7 +15,7 @@
 
   let latitude = "";
   let longitude = "";
-  let position = "";
+  let error = "";
   let isLoading = false;
   let latFieldState;
   let latFieldApi;
@@ -24,20 +24,19 @@
 
   async function getLocation() {
     if (!navigator.geolocation) {
-      // fieldApi.setError("Geolocation is not supported by your browser");
+      error = "Geolocation is not supported by your browser";
     } else {
       isLoading = true;
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           latitude = pos.coords.latitude;
           longitude = pos.coords.longitude;
-          // position = `Latitude: ${latitude}, Longitude: ${longitude}`;
           latFieldApi.setValue(latitude);
           longFieldApi.setValue(longitude);
           isLoading = false;
         },
         (err) => {
-          // fieldApi.setError(`Error(${err.code}): ${err.message}`);
+          error = `Error(${err.code}): ${err.message}`;
           isLoading = false;
         }
       );
@@ -115,6 +114,9 @@
       {/if}
       {#if !latitudeField || !longitudeField}
         <div class="error">Please select a field</div>
+      {/if}
+      {#if error}
+        <div class="error">{error}</div>
       {/if}
       {#if latFieldState?.error}
         <div class="error">{latFieldState.error}</div>

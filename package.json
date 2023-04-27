@@ -1,6 +1,6 @@
 {
   "name": "geolocation",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "A form field that provides the user's current geolocation",
   "author": "andz-bb",
   "license": "MIT",
