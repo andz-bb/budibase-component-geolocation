@@ -3,14 +3,20 @@
   "metadata": {},
   "schema": {
     "name": "geolocation",
-    "friendlyName": "geolocation",
+    "friendlyName": "Geolocation",
     "description": "A form field that provides the user's current geolocation",
-    "icon": "Text",
+    "icon": "Location",
     "settings": [
       {
-        "type": "field/string",
-        "label": "Field",
-        "key": "field",
+        "type": "field/number",
+        "label": "Latitude Field",
+        "key": "latitudeField",
+        "required": true
+      },
+      {
+        "type": "field/number",
+        "label": "Longitude Field",
+        "key": "longitudeField",
         "required": true
       },
       {

@@ -1,7 +1,8 @@
 {
   "name": "geolocation",
-  "version": "0.1.0",
+  "version": "0.3.1",
   "description": "A form field that provides the user's current geolocation",
+  "author": "andz-bb",
   "license": "MIT",
   "svelte": "index.js",
   "module": "dist/plugin.min.js",

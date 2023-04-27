@@ -2,8 +2,10 @@
   import { getContext, onDestroy } from "svelte";
 
   export let disabled;
-  export let field;
   export let label;
+
+  export let latitudeField;
+  export let longitudeField;
 
   const { styleable } = getContext("sdk");
   const component = getContext("component");
@@ -11,21 +13,32 @@
   const formStepContext = getContext("form-step");
   const fieldGroupContext = getContext("field-group");
 
+  let latitude = "";
+  let longitude = "";
   let position = "";
-  let fieldState;
-  let fieldApi;
+  let isLoading = false;
+  let latFieldState;
+  let latFieldApi;
+  let longFieldState;
+  let longFieldApi;
 
   async function getLocation() {
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser");
+      // fieldApi.setError("Geolocation is not supported by your browser");
     } else {
+      isLoading = true;
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          position = `Latitude: ${pos.coords.latitude}, Longitude: ${pos.coords.longitude}`;
-          fieldApi?.setValue(position);
+          latitude = pos.coords.latitude;
+          longitude = pos.coords.longitude;
+          // position = `Latitude: ${latitude}, Longitude: ${longitude}`;
+          latFieldApi.setValue(latitude);
+          longFieldApi.setValue(longitude);
+          isLoading = false;
         },
         (err) => {
-          alert(`Error(${err.code}): ${err.message}`);
+          // fieldApi.setError(`Error(${err.code}): ${err.message}`);
+          isLoading = false;
         }
       );
     }
@@ -34,26 +47,40 @@
   const formApi = formContext?.formApi;
   const labelPos = fieldGroupContext?.labelPosition || "above";
   $: formStep = formStepContext ? $formStepContext || 1 : 1;
-  $: formField = formApi?.registerField(
-    field,
-    "text",
-    position,
+  $: labelClass =
+    labelPos === "above" ? "" : `spectrum-FieldLabel--${labelPos}`;
+
+  const formFieldLatitude = formApi?.registerField(
+    latitudeField,
+    "number",
+    latitude,
     false,
     null,
     formStep
   );
 
-  $: unsubscribe = formField?.subscribe((value) => {
-    fieldState = value?.fieldState;
-    fieldApi = value?.fieldApi;
+  const formFieldLongitude = formApi?.registerField(
+    longitudeField,
+    "number",
+    longitude,
+    false,
+    null,
+    formStep
+  );
+
+  $: unsubscribeLatitude = formFieldLatitude?.subscribe((value) => {
+    latFieldState = value?.fieldState;
+    latFieldApi = value?.fieldApi;
   });
 
-  $: labelClass =
-    labelPos === "above" ? "" : `spectrum-FieldLabel--${labelPos}`;
+  $: unsubscribeLongitude = formFieldLongitude?.subscribe((value) => {
+    longFieldState = value?.fieldState;
+    longFieldApi = value?.fieldApi;
+  });
 
   onDestroy(() => {
-    fieldApi?.deregister();
-    unsubscribe?.();
+    unsubscribeLatitude();
+    unsubscribeLongitude();
   });
 </script>
 
@@ -63,21 +90,39 @@
   {:else}
     <label
       class:hidden={!label}
-      for={fieldState?.fieldId}
+      for={longFieldState?.fieldId}
       class={`spectrum-FieldLabel spectrum-FieldLabel--sizeM spectrum-Form-itemLabel ${labelClass}`}
     >
       {label || " "}
     </label>
     <div class="spectrum-Form-itemField">
-      <input type="text" value={position} readonly />
-      <button on:click={getLocation} {disabled}>Get Geolocation</button>
+      <button
+        class="spectrum-ActionButton spectrum-ActionButton--sizeM"
+        on:click={getLocation}
+        {disabled}
+      >
+        <span class="spectrum-ActionButton-label">Get Location</span>
+      </button>
+      <p>{latitude}</p>
+      <p>{longitude}</p>
+
+      {#if isLoading}
+        <span
+          class="spectrum-Loader spectrum-Loader--sizeS"
+          role="status"
+          aria-label="Loading"
+        />
+      {/if}
+      {#if !latitudeField || !longitudeField}
+        <div class="error">Please select a field</div>
+      {/if}
+      {#if latFieldState?.error}
+        <div class="error">{latFieldState.error}</div>
+      {/if}
+      {#if longFieldState?.error}
+        <div class="error">{longFieldState.error}</div>
+      {/if}
     </div>
-    {#if !field}
-      <div class="error">Please select a field</div>
-    {/if}
-    {#if fieldState?.error}
-      <div class="error">{fieldState.error}</div>
-    {/if}
   {/if}
 </div>
 
@@ -94,6 +139,9 @@
   .spectrum-Form-itemField {
     position: relative;
     width: 100%;
+    /* display: flex; */
+    align-items: center;
+    gap: 8px;
   }
   .error {
     color: var(
