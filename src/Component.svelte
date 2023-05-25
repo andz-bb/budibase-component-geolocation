@@ -1,5 +1,6 @@
 <script>
   import { getContext, onDestroy } from "svelte";
+  import { writable } from "svelte/store";
 
   export let disabled;
   export let label;
@@ -21,6 +22,11 @@
   let latFieldApi;
   let longFieldState;
   let longFieldApi;
+  let unsubscribeLatitude;
+  let unsubscribeLongitude;
+
+  let initialLatStore = writable(null);
+  let initialLongStore = writable(null);
 
   async function getLocation() {
     if (!navigator.geolocation) {
@@ -49,37 +55,51 @@
   $: labelClass =
     labelPos === "above" ? "" : `spectrum-FieldLabel--${labelPos}`;
 
-  const formFieldLatitude = formApi?.registerField(
-    latitudeField,
-    "number",
-    latitude,
-    false,
-    null,
-    formStep
-  );
+  $: if (formApi && latitudeField) {
+    const formFieldLatitude = formApi.registerField(
+      latitudeField,
+      "number",
+      latitude,
+      false,
+      null,
+      formStep
+    );
 
-  const formFieldLongitude = formApi?.registerField(
-    longitudeField,
-    "number",
-    longitude,
-    false,
-    null,
-    formStep
-  );
+    unsubscribeLatitude = formFieldLatitude.subscribe((value) => {
+      latFieldState = value?.fieldState;
+      latFieldApi = value?.fieldApi;
+    });
+  }
 
-  $: unsubscribeLatitude = formFieldLatitude?.subscribe((value) => {
-    latFieldState = value?.fieldState;
-    latFieldApi = value?.fieldApi;
-  });
+  $: if (formApi && longitudeField) {
+    const formFieldLongitude = formApi.registerField(
+      longitudeField,
+      "number",
+      longitude,
+      false,
+      null,
+      formStep
+    );
 
-  $: unsubscribeLongitude = formFieldLongitude?.subscribe((value) => {
-    longFieldState = value?.fieldState;
-    longFieldApi = value?.fieldApi;
-  });
+    unsubscribeLongitude = formFieldLongitude.subscribe((value) => {
+      longFieldState = value?.fieldState;
+      longFieldApi = value?.fieldApi;
+    });
+  }
+
+  $: {
+    if (latFieldState?.value !== undefined && $initialLatStore === null) {
+      initialLatStore.set(latFieldState.value);
+    }
+
+    if (longFieldState?.value !== undefined && $initialLongStore === null) {
+      initialLongStore.set(longFieldState.value);
+    }
+  }
 
   onDestroy(() => {
-    unsubscribeLatitude();
-    unsubscribeLongitude();
+    unsubscribeLatitude?.();
+    unsubscribeLongitude?.();
   });
 </script>
 
@@ -129,8 +149,12 @@
         {/if}
 
         <div class="results">
-          <div class="spectrum-FieldLabel">{latitude}</div>
-          <div class="spectrum-FieldLabel">{longitude}</div>
+          <div class="spectrum-FieldLabel">
+            {latitude || $initialLatStore}
+          </div>
+          <div class="spectrum-FieldLabel">
+            {longitude || $initialLongStore}
+          </div>
         </div>
       </div>
 
