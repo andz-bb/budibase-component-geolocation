@@ -27,7 +27,7 @@
       error = "Geolocation is not supported by your browser";
     } else {
       isLoading = true;
-      navigator.geolocation.getCurrentPosition(
+      await navigator.geolocation.getCurrentPosition(
         (pos) => {
           latitude = pos.coords.latitude;
           longitude = pos.coords.longitude;
@@ -95,25 +95,47 @@
       {label || " "}
     </label>
     <div class="spectrum-Form-itemField">
-      {#if !disabled}
-        <button
-          on:click={getLocation}
-          class="spectrum-Button spectrum-Button--fill spectrum-Button--sizeM spectrum-Button--primary"
-          >Get Location</button
-        >
-      {/if}
-      <p>{latitude}</p>
-      <p>{longitude}</p>
+      <div class="container">
+        {#if !disabled}
+          <div class="actions">
+            {#if !isLoading}
+              <button
+                on:click={getLocation}
+                class="spectrum-Button spectrum-Button--fill spectrum-Button--sizeM spectrum-Button--primary"
+                >Get Location</button
+              >
+            {:else}
+              <div class="spinner">
+                <div
+                  class="spectrum-ProgressCircle spectrum-ProgressCircle--indeterminate spectrum-ProgressCircle--small"
+                >
+                  <div class="spectrum-ProgressCircle-track" />
+                  <div class="spectrum-ProgressCircle-fills">
+                    <div class="spectrum-ProgressCircle-fillMask1">
+                      <div class="spectrum-ProgressCircle-fillSubMask1">
+                        <div class="spectrum-ProgressCircle-fill" />
+                      </div>
+                    </div>
+                    <div class="spectrum-ProgressCircle-fillMask2">
+                      <div class="spectrum-ProgressCircle-fillSubMask2">
+                        <div class="spectrum-ProgressCircle-fill" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {/if}
+          </div>
+        {/if}
 
-      {#if isLoading}
-        <span
-          class="spectrum-Loader spectrum-Loader--sizeS"
-          role="status"
-          aria-label="Loading"
-        />
-      {/if}
+        <div class="results">
+          <div class="spectrum-FieldLabel">{latitude}</div>
+          <div class="spectrum-FieldLabel">{longitude}</div>
+        </div>
+      </div>
+
       {#if !latitudeField || !longitudeField}
-        <div class="error">Please select a field</div>
+        <div class="error">Please select latitude and longitude fields</div>
       {/if}
       {#if error}
         <div class="error">{error}</div>
@@ -129,6 +151,18 @@
 </div>
 
 <style>
+  .container {
+    display: flex;
+    height: 42px;
+    align-items: center;
+  }
+  .actions {
+    width: 135px;
+  }
+  .spinner {
+    display: flex;
+    justify-content: center;
+  }
   .placeholder {
     color: var(--spectrum-global-color-gray-600);
   }
@@ -141,7 +175,6 @@
   .spectrum-Form-itemField {
     position: relative;
     width: 100%;
-    /* display: flex; */
     align-items: center;
     gap: 8px;
   }
