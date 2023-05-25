@@ -1,20 +1,13 @@
-# Geolocation
-This is a readme for your new Budibase plugin.
+# Budibase Geolocation Field
+<img width="732" alt="image" src="https://github.com/andz-bb/budibase-component-geolocation/assets/110921612/eb7cc710-915c-4f4e-979f-d54a4511da28">
+
 
 # Description
-A form field that provides the user's current geolocation
+A simple Budibase form field component that provides the user's current geolocation. It takes two number fields: one for latitude and one for longitude.
+
+The Disabled setting hides the button that overwrites the current field values and simply displays the current values if available.
 
 Find out more about [Budibase](https://github.com/Budibase/budibase).
 
-## Instructions
 
-To build your new  plugin run the following in your Budibase CLI:
-```
-budi plugins --build
-```
-
-You can also re-build everytime you make a change to your plugin with the command:
-```
-budi plugins --watch
-```
 
