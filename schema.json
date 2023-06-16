@@ -9,13 +9,13 @@
     "settings": [
       {
         "type": "field/number",
-        "label": "Latitude Field",
+        "label": "Latitude field",
         "key": "latitudeField",
         "required": true
       },
       {
         "type": "field/number",
-        "label": "Longitude Field",
+        "label": "Longitude field",
         "key": "longitudeField",
         "required": true
       },
@@ -26,18 +26,45 @@
       },
       {
         "type": "boolean",
+        "label": "Show output",
+        "key": "showOutput",
+        "defaultValue": true
+      },
+      {
+        "type": "boolean",
         "label": "Disabled",
         "key": "disabled",
         "defaultValue": false
       },
       {
+        "type": "boolean",
+        "label": "Request location automatically",
+        "key": "automode",
+        "defaultValue": false
+      },
+      {
+        "type": "boolean",
+        "label": "Show button",
+        "key": "showButton",
+        "defaultValue": true,
+        "dependsOn": "automode"
+      },
+      {
+        "type": "number",
+        "label": "Automatic request delay (seconds)",
+        "key": "automodeDelay",
+        "defaultValue": 2,
+        "min": 0,
+        "dependsOn": "automode"
+      },
+      {
         "type": "validation/number",
-        "label": "Latitude Validation",
+        "label": "Latitude validation",
         "key": "latitudeValidation"
       },
       {
         "type": "validation/number",
-        "label": "Longitude Validation",
+        "label": "Longitude validation",
         "key": "longitudeValidation"
       }
     ]

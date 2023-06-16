@@ -1,9 +1,13 @@
 <script>
-  import { getContext, onDestroy } from "svelte";
+  import { getContext, onDestroy, onMount } from "svelte";
   import { writable } from "svelte/store";
 
+  export let automode;
+  export let automodeDelay;
   export let disabled;
   export let label;
+  export let showButton;
+  export let showOutput;
 
   export let latitudeField;
   export let longitudeField;
@@ -99,6 +103,16 @@
     }
   }
 
+  onMount(async () => {
+    if (automode && !disabled) {
+      if (automodeDelay) {
+        setTimeout(getLocation, automodeDelay * 1000);
+      } else {
+        await getLocation();
+      }
+    }
+  });
+
   onDestroy(() => {
     unsubscribeLatitude?.();
     unsubscribeLongitude?.();
@@ -118,7 +132,7 @@
     </label>
     <div class="spectrum-Form-itemField">
       <div class="container">
-        {#if !disabled}
+        {#if !disabled && showButton}
           <div class="actions">
             {#if !isLoading}
               <button
@@ -149,15 +163,16 @@
             {/if}
           </div>
         {/if}
-
-        <div class="results">
-          <div class="spectrum-FieldLabel">
-            {latitude || $initialLatStore}
+        {#if showOutput}
+          <div class="results">
+            <div class="spectrum-FieldLabel">
+              {latitude || $initialLatStore}
+            </div>
+            <div class="spectrum-FieldLabel">
+              {longitude || $initialLongStore}
+            </div>
           </div>
-          <div class="spectrum-FieldLabel">
-            {longitude || $initialLongStore}
-          </div>
-        </div>
+        {/if}
       </div>
 
       {#if !latitudeField || !longitudeField}
