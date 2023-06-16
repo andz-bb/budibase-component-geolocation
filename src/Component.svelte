@@ -7,6 +7,8 @@
 
   export let latitudeField;
   export let longitudeField;
+  export let latitudeValidation;
+  export let longitudeValidation;
 
   const { styleable } = getContext("sdk");
   const component = getContext("component");
@@ -61,7 +63,7 @@
       "number",
       latitude,
       false,
-      null,
+      latitudeValidation,
       formStep
     );
 
@@ -77,7 +79,7 @@
       "number",
       longitude,
       false,
-      null,
+      longitudeValidation,
       formStep
     );
 

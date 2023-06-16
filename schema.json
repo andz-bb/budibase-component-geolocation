@@ -29,6 +29,16 @@
         "label": "Disabled",
         "key": "disabled",
         "defaultValue": false
+      },
+      {
+        "type": "validation/number",
+        "label": "Latitude Validation",
+        "key": "latitudeValidation"
+      },
+      {
+        "type": "validation/number",
+        "label": "Longitude Validation",
+        "key": "longitudeValidation"
       }
     ]
   }
