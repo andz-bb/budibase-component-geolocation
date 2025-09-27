@@ -148,16 +148,11 @@
 
   export let zoomLevel
   export let zoomEnabled = true
-  export let latitudeKey = null
-  export let longitudeKey = null
-  export let titleKey = null
   export let fullScreenEnabled = false
   export let locationEnabled = true
   export let defaultLocation
   export let tileURL = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
   export let mapAttribution
-  export let onClickMarker
-  export let onCreateMarker
 
   const embeddedMapId = `${uuidv4()}-wrapper`
 
