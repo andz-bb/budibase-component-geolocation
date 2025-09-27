@@ -26,12 +26,6 @@
       },
       {
         "type": "boolean",
-        "label": "Show output",
-        "key": "showOutput",
-        "defaultValue": true
-      },
-      {
-        "type": "boolean",
         "label": "Disabled",
         "key": "disabled",
         "defaultValue": false
@@ -46,8 +40,14 @@
         "type": "boolean",
         "label": "Show button",
         "key": "showButton",
+        "defaultValue": false
+      },
+      {
+        "type": "boolean",
+        "label": "Show output",
+        "key": "showOutput",
         "defaultValue": true,
-        "dependsOn": "automode"
+        "dependsOn": "showButton"
       },
       {
         "type": "number",
@@ -66,6 +66,49 @@
         "type": "validation/number",
         "label": "Longitude validation",
         "key": "longitudeValidation"
+      },
+      {
+        "type": "boolean",
+        "label": "Show Map",
+        "key": "showMap",
+        "defaultValue": true
+      },
+      {
+        "type": "boolean",
+        "label": "Enable zoom",
+        "key": "zoomEnabled",
+        "defaultValue": true,
+        "dependsOn": "showMap"
+      },
+      {
+        "type": "text",
+        "label": "Default location",
+        "key": "defaultLocation",
+        "placeholder": "51.5072,-0.1276",
+        "dependsOn": "showMap"
+      },
+      {
+        "type": "number",
+        "label": "Default zoom (0-100)",
+        "key": "zoomLevel",
+        "placeholder": 50,
+        "max": 100,
+        "min": 0,
+        "dependsOn": "showMap"
+      },
+      {
+        "type": "text",
+        "label": "Tile URL",
+        "key": "tileURL",
+        "defaultValue": "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "dependsOn": "showMap"
+      },
+      {
+        "type": "text",
+        "label": "Map attribution",
+        "key": "mapAttribution",
+        "defaultValue": "OpenStreetMap contributors",
+        "dependsOn": "showMap"
       }
     ]
   }
