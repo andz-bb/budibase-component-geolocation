@@ -33,7 +33,6 @@
   let longitude = "";
   let error = "";
   let isLoading = false;
-  let showMap;
   let latFieldState;
   let latFieldApi;
   let longFieldState;
@@ -67,8 +66,8 @@
 
     latitude = lat;
     longitude = lng;
-    latFieldApi.setValue(latitude);
-    longFieldApi.setValue(longitude);
+    latFieldApi.setValue(lat);
+    longFieldApi.setValue(lng);
 
     let candidateMarker = L.marker(
       [lat, lng],
@@ -146,6 +145,7 @@
 
   initMapControls()
 
+  export let showMap;
   export let zoomLevel
   export let zoomEnabled = true
   export let fullScreenEnabled = false
@@ -215,7 +215,6 @@
   let mapInstance
   let mapMarkerGroup = new L.FeatureGroup()
   let mounted = false
-  let initialMarkerZoomCompleted = false
   let minZoomLevel = 0
   let maxZoomLevel = 18
   let cachedDeviceCoordinates
@@ -325,36 +324,39 @@
       mapInstance.remove()
     }
 
-    try {
-      mapInstance = L.map(embeddedMapId, mapOptions)
-      mapMarkerGroup.addTo(mapInstance)
+    if(showMap) {
+      try {
+        mapInstance = L.map(embeddedMapId, mapOptions)
+        mapMarkerGroup.addTo(mapInstance)
 
-      // Add attribution
-      const cleanAttribution = sanitizeHtml(attribution, {
-        allowedTags: ["a"],
-        allowedAttributes: {
-          a: ["href", "target"],
-        },
-      })
-      L.tileLayer(tileURL, {
-        attribution: "&copy; " + cleanAttribution,
-        zoom,
-      }).addTo(mapInstance)
+        // Add attribution
+        const cleanAttribution = sanitizeHtml(attribution, {
+          allowedTags: ["a"],
+          allowedAttributes: {
+            a: ["href", "target"],
+          },
+        })
+        L.tileLayer(tileURL, {
+          attribution: "&copy; " + cleanAttribution,
+          zoom,
+        }).addTo(mapInstance)
 
-      // Add click handler
-      mapInstance.on("click", handleMapClick)
-      if(latitude && longitude) {
-        setLatLng(latitude, longitude)
+        // Add click handler
+        mapInstance.on("click", handleMapClick)
+        if(latitude && longitude) {
+          setLatLng(latitude, longitude)
+        }
+
+        // Reset view
+        resetView()
+      } catch (e) {
+        console.error("There was a problem with the map", e)
       }
-
-      // Reset view
-      resetView()
-    } catch (e) {
-      console.error("There was a problem with the map", e)
     }
   }
 
   const handleMapClick = e => {
+    console.log(e)
     setLatLng(e.latlng.lat, e.latlng.lng)
   }
 </script>
@@ -366,13 +368,23 @@
 >
   {label || " "}
 </label>
-<div class="embedded-map-wrapper map-default" use:styleable={$component.styles}>
-  {#if error}
-    <div>{error}</div>
-  {/if}
 
-  <div id={embeddedMapId} class="embedded embedded-map" display={showMap ? 'block' : 'hidden'} />
-</div>
+{#if showMap}
+  <div class="embedded-map-wrapper map-default" use:styleable={$component.styles}>
+    {#if error}
+      <div>{error}</div>
+    {/if}
+
+    <div id={embeddedMapId} class="embedded embedded-map" />
+  </div>
+{:else}
+  <div use:styleable={$component.styles}>
+    {#if error}
+      <div>{error}</div>
+    {/if}
+  </div>
+{/if}
+
 <div class="button-container">
   <div class="spectrum-Form-item" use:styleable={$component.styles}>
     {#if !formContext}
