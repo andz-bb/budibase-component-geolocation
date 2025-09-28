@@ -356,7 +356,6 @@
   }
 
   const handleMapClick = e => {
-    console.log(e)
     setLatLng(e.latlng.lat, e.latlng.lng)
   }
 </script>
