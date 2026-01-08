@@ -1,6 +1,5 @@
 <script>
   import { getContext, onDestroy, onMount } from "svelte";
-  import { writable } from "svelte/store";
 
   export let automode;
   export let automodeDelay;
@@ -20,8 +19,6 @@
   const formStepContext = getContext("form-step");
   const fieldGroupContext = getContext("field-group");
 
-  let latitude = "";
-  let longitude = "";
   let error = "";
   let isLoading = false;
   let latFieldState;
@@ -30,90 +27,154 @@
   let longFieldApi;
   let unsubscribeLatitude;
   let unsubscribeLongitude;
-
-  let initialLatStore = writable(null);
-  let initialLongStore = writable(null);
-
-  async function getLocation() {
-    if (!navigator.geolocation) {
-      error = "Geolocation is not supported by your browser";
-    } else {
-      isLoading = true;
-      await navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          latitude = pos.coords.latitude;
-          longitude = pos.coords.longitude;
-          latFieldApi.setValue(latitude);
-          longFieldApi.setValue(longitude);
-          isLoading = false;
-        },
-        (err) => {
-          error = `Error(${err.code}): ${err.message}`;
-          isLoading = false;
-        }
-      );
-    }
-  }
+  let automodeTimeout;
+  let isDestroyed = false;
 
   const formApi = formContext?.formApi;
   const labelPos = fieldGroupContext?.labelPosition || "above";
   $: formStep = formStepContext ? $formStepContext || 1 : 1;
   $: labelClass =
     labelPos === "above" ? "" : `spectrum-FieldLabel--${labelPos}`;
+  $: labelFor =
+    (latFieldState?.error && latFieldState?.fieldId) ||
+    (longFieldState?.error && longFieldState?.fieldId) ||
+    latFieldState?.fieldId ||
+    longFieldState?.fieldId;
+
+  const validationKey = (validation) => {
+    if (!validation) {
+      return "";
+    }
+
+    try {
+      return JSON.stringify(validation);
+    } catch (stringifyError) {
+      return "";
+    }
+  };
+
+  let latitudeRegistrationKey;
+  let longitudeRegistrationKey;
 
   $: if (formApi && latitudeField) {
-    const formFieldLatitude = formApi.registerField(
-      latitudeField,
-      "number",
-      latitude,
-      false,
-      latitudeValidation,
-      formStep
-    );
+    const nextKey = `${latitudeField}|${formStep}|${
+      disabled ? 1 : 0
+    }|${validationKey(latitudeValidation)}`;
+    if (nextKey !== latitudeRegistrationKey) {
+      latitudeRegistrationKey = nextKey;
+      unsubscribeLatitude?.();
 
-    unsubscribeLatitude = formFieldLatitude.subscribe((value) => {
-      latFieldState = value?.fieldState;
-      latFieldApi = value?.fieldApi;
-    });
+      const formFieldLatitude = formApi.registerField(
+        latitudeField,
+        "number",
+        null,
+        disabled,
+        false,
+        latitudeValidation,
+        formStep
+      );
+
+      unsubscribeLatitude = formFieldLatitude?.subscribe((value) => {
+        latFieldState = value?.fieldState;
+        latFieldApi = value?.fieldApi;
+      });
+    }
+  } else if (latitudeRegistrationKey) {
+    latitudeRegistrationKey = null;
+    latFieldApi?.deregister();
+    unsubscribeLatitude?.();
+    latFieldState = null;
+    latFieldApi = null;
   }
 
   $: if (formApi && longitudeField) {
-    const formFieldLongitude = formApi.registerField(
-      longitudeField,
-      "number",
-      longitude,
-      false,
-      longitudeValidation,
-      formStep
+    const nextKey = `${longitudeField}|${formStep}|${
+      disabled ? 1 : 0
+    }|${validationKey(longitudeValidation)}`;
+    if (nextKey !== longitudeRegistrationKey) {
+      longitudeRegistrationKey = nextKey;
+      unsubscribeLongitude?.();
+
+      const formFieldLongitude = formApi.registerField(
+        longitudeField,
+        "number",
+        null,
+        disabled,
+        false,
+        longitudeValidation,
+        formStep
+      );
+
+      unsubscribeLongitude = formFieldLongitude?.subscribe((value) => {
+        longFieldState = value?.fieldState;
+        longFieldApi = value?.fieldApi;
+      });
+    }
+  } else if (longitudeRegistrationKey) {
+    longitudeRegistrationKey = null;
+    longFieldApi?.deregister();
+    unsubscribeLongitude?.();
+    longFieldState = null;
+    longFieldApi = null;
+  }
+
+  function getLocation() {
+    if (disabled || isLoading) {
+      return;
+    }
+
+    error = "";
+
+    if (!latFieldApi || !longFieldApi) {
+      return;
+    }
+
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      error = "Geolocation is not supported by your browser";
+      return;
+    }
+
+    isLoading = true;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        if (isDestroyed) {
+          return;
+        }
+
+        const { latitude, longitude } = pos.coords;
+        latFieldApi?.setValue(latitude);
+        longFieldApi?.setValue(longitude);
+        isLoading = false;
+      },
+      (err) => {
+        if (isDestroyed) {
+          return;
+        }
+
+        error = `Error(${err.code}): ${err.message}`;
+        isLoading = false;
+      }
     );
-
-    unsubscribeLongitude = formFieldLongitude.subscribe((value) => {
-      longFieldState = value?.fieldState;
-      longFieldApi = value?.fieldApi;
-    });
   }
 
-  $: {
-    if (latFieldState?.value !== undefined && $initialLatStore === null) {
-      initialLatStore.set(latFieldState.value);
-    }
-
-    if (longFieldState?.value !== undefined && $initialLongStore === null) {
-      initialLongStore.set(longFieldState.value);
-    }
-  }
-
-  onMount(async () => {
+  onMount(() => {
     if (automode && !disabled) {
       if (automodeDelay) {
-        setTimeout(getLocation, automodeDelay * 1000);
+        automodeTimeout = setTimeout(getLocation, automodeDelay * 1000);
       } else {
-        await getLocation();
+        getLocation();
       }
     }
   });
 
   onDestroy(() => {
+    isDestroyed = true;
+    if (automodeTimeout) {
+      clearTimeout(automodeTimeout);
+      automodeTimeout = null;
+    }
+    latFieldApi?.deregister();
+    longFieldApi?.deregister();
     unsubscribeLatitude?.();
     unsubscribeLongitude?.();
   });
@@ -125,7 +186,7 @@
   {:else}
     <label
       class:hidden={!label}
-      for={longFieldState?.fieldId}
+      for={labelFor}
       class={`spectrum-FieldLabel spectrum-FieldLabel--sizeM spectrum-Form-itemLabel ${labelClass}`}
     >
       {label || " "}
@@ -136,25 +197,26 @@
           <div class="actions">
             {#if !isLoading}
               <button
+                type="button"
                 on:click={getLocation}
                 class="spectrum-Button spectrum-Button--fill spectrum-Button--sizeM spectrum-Button--primary"
-                >Get Location</button
+                >Get location</button
               >
             {:else}
               <div class="spinner">
                 <div
                   class="spectrum-ProgressCircle spectrum-ProgressCircle--indeterminate spectrum-ProgressCircle--small"
                 >
-                  <div class="spectrum-ProgressCircle-track" />
+                  <div class="spectrum-ProgressCircle-track"></div>
                   <div class="spectrum-ProgressCircle-fills">
                     <div class="spectrum-ProgressCircle-fillMask1">
                       <div class="spectrum-ProgressCircle-fillSubMask1">
-                        <div class="spectrum-ProgressCircle-fill" />
+                        <div class="spectrum-ProgressCircle-fill"></div>
                       </div>
                     </div>
                     <div class="spectrum-ProgressCircle-fillMask2">
                       <div class="spectrum-ProgressCircle-fillSubMask2">
-                        <div class="spectrum-ProgressCircle-fill" />
+                        <div class="spectrum-ProgressCircle-fill"></div>
                       </div>
                     </div>
                   </div>
@@ -166,10 +228,10 @@
         {#if showOutput}
           <div class="results">
             <div class="spectrum-FieldLabel">
-              {latitude || $initialLatStore}
+              {latFieldState?.value ?? ""}
             </div>
             <div class="spectrum-FieldLabel">
-              {longitude || $initialLongStore}
+              {longFieldState?.value ?? ""}
             </div>
           </div>
         {/if}

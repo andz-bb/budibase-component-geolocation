@@ -1,6 +1,6 @@
 {
   "name": "geolocation",
-  "version": "1.6.0",
+  "version": "1.7.2",
   "description": "A form field that provides the user's current geolocation",
   "author": "Andrew Thompson (https://github.com/andz-bb)",
   "repository": "github:andz-bb/budibase-component-geolocation",
@@ -16,7 +16,7 @@
     "svelte": "^5.0.0"
   },
   "devDependencies": {
-    "@budibase/backend-core": "^2.0.13",
+    "@budibase/backend-core": "^2.8.0",
     "@rollup/plugin-commonjs": "^25.0.7",
     "@rollup/plugin-node-resolve": "^15.2.3",
     "postcss": "^8.2.10",
