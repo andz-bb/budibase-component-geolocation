@@ -1,6 +1,6 @@
 # Budibase Geolocation Field
 
-### [2026 update] Requires Budibase 3.23.48 or higher to run - [read more here](https://github.com/Budibase/budibase/discussions/17316)
+### [2026 update] Requires Budibase 3.24 or higher to run - [read more here](https://github.com/Budibase/budibase/discussions/17316)
 
 <img width="732" alt="image" src="https://github.com/andz-bb/budibase-component-geolocation/assets/110921612/eb7cc710-915c-4f4e-979f-d54a4511da28">
 
